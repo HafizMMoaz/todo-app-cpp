@@ -11,6 +11,7 @@ bool login(string, string);
 bool isAdmin(int);
 int findUserById(int);
 
+// ---------------- User Management ----------------
 const int maxSize = 10;
 
 int userId[maxSize], userRole[maxSize];
@@ -19,7 +20,23 @@ int userCount = 0;
 
 int currentLoggedInUser = -1;
 
-main()
+// ---------------- Task Management ----------------
+struct Task {
+    int id;
+    string title;
+    string description;
+    int assignedUser; // userId
+};
+
+Task tasks[maxSize];
+int taskCount = 0;
+
+void viewTasks();
+void addTask();
+void updateTask();
+void deleteTask();
+
+int main()
 {
     registerUser(0, "Admin", "admin", "admin@gmail.com", 1);
 
@@ -32,9 +49,8 @@ main()
     int choice = menu(OnBoardingMenu, 3);
     while (true)
     {
-        if (choice == 1)
+        if (choice == 1) // Login
         {
-            cout << "You selected Login." << endl;
             clearScreen();
             printHeader("Login");
             string email, password;
@@ -61,32 +77,14 @@ main()
 
                 while (true)
                 {
-                    if (mainChoice == 1)
-                    {
-                        clearScreen();
-                        printHeader("Tasks List");
-
-                    }
-                    else if (mainChoice == 2)
-                    {
-                        clearScreen();
-                        printHeader("Add Task");
-                    }
-                    else if (mainChoice == 3)
-                    {
-                        clearScreen();
-                        printHeader("Update Task");
-                    }
-                    else if (mainChoice == 4)
-                    {
-                        clearScreen();
-                        printHeader("Delete Task");
-                    }
-                    else if (mainChoice == 5)
+                    if (mainChoice == 1) viewTasks();
+                    else if (mainChoice == 2) addTask();
+                    else if (mainChoice == 3) updateTask();
+                    else if (mainChoice == 4) deleteTask();
+                    else if (mainChoice == 5) // Profile
                     {
                         clearScreen();
                         printHeader("Profile");
-
                         cout << "User ID: " << userId[currentLoggedInUser] << endl;
                         cout << "Name: " << userName[currentLoggedInUser] << endl;
                         cout << "Email: " << userEmail[currentLoggedInUser] << endl;
@@ -94,7 +92,7 @@ main()
                         cout << "Role: " << (userRole[currentLoggedInUser] == 1 ? "Admin" : "User") << endl;
                         cout << endl;
                     }
-                    else if (mainChoice == 6)
+                    else if (mainChoice == 6) // Logout
                     {
                         clearScreen();
                         printHeader("Logout");
@@ -102,19 +100,19 @@ main()
                         cout << "You have been logged out." << endl;
                         break;
                     }
-                    else if (mainChoice == 7 && admin)
+                    else if (mainChoice == 7 && admin) // View Users
                     {
                         clearScreen();
                         printHeader("Users List");
-
                         cout << "User ID\tName\tEmail\tRole" << endl;
                         for (int i = 0; i < userCount; i++)
                         {
-                            cout << userId[i] << "\t" << userName[i] << "\t" << userEmail[i] << "\t" << (userRole[i] == 1 ? "Admin" : "User") << endl;
+                            cout << userId[i] << "\t" << userName[i] << "\t" << userEmail[i] << "\t" 
+                                 << (userRole[i] == 1 ? "Admin" : "User") << endl;
                         }
                         cout << endl;
                     }
-                    else if (mainChoice == 8 && admin)
+                    else if (mainChoice == 8 && admin) // Add User
                     {
                         clearScreen();
                         printHeader("Add User");
@@ -134,13 +132,12 @@ main()
                             cout << "Invalid role. Please enter 0 for User or 1 for Admin: ";
                             cin >> role;
                         }
-
                         if (registerUser(id, name, password, email, role))
                             cout << "Registration successful!" << endl;
                         else
                             cout << "Registration failed. User limit reached." << endl;
                     }
-                    else if (mainChoice == 9 && admin)
+                    else if (mainChoice == 9 && admin) // Update User
                     {
                         clearScreen();
                         printHeader("Update User");
@@ -149,7 +146,7 @@ main()
                         cin >> userIdToUpdate;
 
                         int userIndex = findUserById(userIdToUpdate);
-                        if(userIndex != -1)
+                        if (userIndex != -1)
                         {
                             string name, password, email;
                             int role;
@@ -162,39 +159,30 @@ main()
                             cout << "Enter new Role (0 for User, 1 for Admin, current: "
                                  << (userRole[userIndex] == 1 ? "Admin" : "User") << "): ";
                             cin >> role;
-
                             while (role < 0 || role > 1)
                             {
                                 cout << "Invalid role. Please enter 0 for User or 1 for Admin: ";
                                 cin >> role;
                             }
-
                             userName[userIndex] = name;
                             userPassword[userIndex] = password;
                             userEmail[userIndex] = email;
                             userRole[userIndex] = role;
-
                             cout << "User updated successfully!" << endl;
                         }
-                        else
-                        {
-                            cout << "User not found." << endl;
-                        }
-
+                        else cout << "User not found." << endl;
                     }
-                    else if (mainChoice == 10 && admin)
+                    else if (mainChoice == 10 && admin) // Delete User
                     {
                         clearScreen();
                         printHeader("Delete User");
-
                         int userIdToDelete;
                         cout << "Enter User ID to delete: ";
                         cin >> userIdToDelete;
-
                         int userIndex = findUserById(userIdToDelete);
-                        if(userIndex != -1){
+                        if (userIndex != -1) {
                             userCount--;
-                            for(int i = userIndex; i < userCount; i++)
+                            for (int i = userIndex; i < userCount; i++)
                             {
                                 userId[i] = userId[i + 1];
                                 userName[i] = userName[i + 1];
@@ -202,26 +190,24 @@ main()
                                 userEmail[i] = userEmail[i + 1];
                                 userRole[i] = userRole[i + 1];
                             }
-                        }else{
+                            cout << "User deleted successfully!" << endl;
+                        } else {
                             cout << "User not found." << endl;
                         }
                     }
-                    else
-                    {
-                        cout << "Invalid choice. Please try again." << endl;
-                    }
+                    else cout << "Invalid choice. Please try again." << endl;
+
                     holdScreen();
                     clearScreen();
-                    printHeader("Welcome! " + userName[currentLoggedInUser]);
-                    mainChoice = menu(MainMenu, menuSize);
+                    if (currentLoggedInUser != -1) {
+                        printHeader("Welcome! " + userName[currentLoggedInUser]);
+                        mainChoice = menu(MainMenu, menuSize);
+                    } else break;
                 }
             }
-            else
-            {
-                cout << "Login failed. Please try again." << endl;
-            }
+            else cout << "Login failed. Please try again." << endl;
         }
-        else if (choice == 2)
+        else if (choice == 2) // Register
         {
             clearScreen();
             printHeader("Register New User");
@@ -234,21 +220,18 @@ main()
             cin >> password;
             cout << "Enter your Email: ";
             cin >> email;
-
             if (registerUser(id, name, password, email, role))
                 cout << "Registration successful!" << endl;
             else
                 cout << "Registration failed. User limit reached." << endl;
         }
-        else if (choice == 3)
+        else if (choice == 3) // Exit
         {
             cout << "Exiting the application." << endl;
             break;
         }
-        else
-        {
-            cout << "Invalid choice. Please try again." << endl;
-        }
+        else cout << "Invalid choice. Please try again." << endl;
+
         holdScreen();
         clearScreen();
         printHeader("");
@@ -257,17 +240,13 @@ main()
     getch();
 }
 
+// ---------------- User Functions ----------------
 int menu(string menu[], int size)
 {
     int choice = 0;
-    for (int i = 0; i < size; i++)
-    {
-        cout << i + 1 << ". " << menu[i] << endl;
-    }
-    cout << endl;
-    cout << "Please select an option: ";
+    for (int i = 0; i < size; i++) cout << i + 1 << ". " << menu[i] << endl;
+    cout << endl << "Please select an option: ";
     cin >> choice;
-
     return choice;
 }
 
@@ -301,30 +280,107 @@ bool login(string email, string password)
             return true;
         }
     }
-    cout << "Login failed. Invalid email or password." << endl;
+    cout << "Invalid email or password." << endl;
     return false;
 }
 
-bool isAdmin(int userId)
+bool isAdmin(int userIdIndex)
 {
-    if (userRole[userId] == 1)
-    {
-        return true;
-    }
-    return false;
+    return (userRole[userIdIndex] == 1);
 }
 
 int findUserById(int id){
     for(int i = 0; i < userCount; i++)
     {
-        if (userId[i] == id)
-        {
-            return i;
-        }
+        if (userId[i] == id) return i;
     }
-    return -1; // User not found
+    return -1;
 }
 
+// ---------------- Task Functions ----------------
+void viewTasks()
+{
+    clearScreen();
+    printHeader("My Tasks");
+
+    bool hasTasks = false;
+    for (int i = 0; i < taskCount; i++)
+    {
+        if (tasks[i].assignedUser == currentLoggedInUser)
+        {
+            if (!hasTasks)
+            {
+                cout << "ID\tTitle\tDescription" << endl;
+                hasTasks = true;
+            }
+            cout << tasks[i].id << "\t" << tasks[i].title << "\t" << tasks[i].description << endl;
+        }
+    }
+
+    if (!hasTasks)
+    {
+        cout << "You have no tasks assigned." << endl;
+    }
+}
+
+
+void addTask()
+{
+    clearScreen();
+    printHeader("Add Task");
+    if (taskCount >= maxSize) {
+        cout << "Task limit reached." << endl;
+        return;
+    }
+    Task t;
+    t.id = taskCount;
+    cout << "Enter Task Title: ";
+    cin >> t.title;
+    cout << "Enter Task Description: ";
+    cin >> t.description;
+    t.assignedUser = currentLoggedInUser;
+    tasks[taskCount++] = t;
+    cout << "Task added successfully!" << endl;
+}
+
+void updateTask()
+{
+    clearScreen();
+    printHeader("Update Task");
+    int taskId;
+    cout << "Enter Task ID to update: ";
+    cin >> taskId;
+    if (taskId >= 0 && taskId < taskCount)
+    {
+        cout << "Enter new Title (current: " << tasks[taskId].title << "): ";
+        cin >> tasks[taskId].title;
+        cout << "Enter new Description (current: " << tasks[taskId].description << "): ";
+        cin >> tasks[taskId].description;
+        cout << "Task updated successfully!" << endl;
+    }
+    else cout << "Task not found." << endl;
+}
+
+void deleteTask()
+{
+    clearScreen();
+    printHeader("Delete Task");
+    int taskId;
+    cout << "Enter Task ID to delete: ";
+    cin >> taskId;
+    if (taskId >= 0 && taskId < taskCount)
+    {
+        for (int i = taskId; i < taskCount - 1; i++)
+        {
+            tasks[i] = tasks[i + 1];
+        }
+        taskCount--;
+        cout << "Task deleted successfully!" << endl;
+    }
+    else cout << "Task not found." << endl;
+}
+
+// ---------------- UI Helpers ----------------
 void printHeader(string screenName)
 {
     cout << "**********************************" << endl;
