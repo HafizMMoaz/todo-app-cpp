@@ -76,4 +76,5 @@ g++ main.cpp -o todo
 - **Assign tasks to other users** (currently tasks are self-assigned)  
 - **Save/load users and tasks from a file** (persistent storage)  
 - **Add due dates & priorities to tasks**  
-- **Improve UI formatting**  
+- **Improve UI formatting**
+- Integrate with MySQL DB and also storage in File System
